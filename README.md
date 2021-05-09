@@ -16,7 +16,7 @@ development by [Prof. Wyllian Bezerra da Silva](http://wyllian.prof.ufsc.br/) at
 
 # Usage Instructions
 
-![xfree-rdp overview](https://github.com/wyllianbs/xfreerdp-gui/blob/master/xfreerdp-gui.png)
+![xfree-rdp overview](https://github.com/juananbow/xfreerdp-gui/blob/master/xfreerdp-gui.png)
 
 1. Run the script in console, e.g., `bash xfreerdp-gui.sh` or change the permission (`chmod u+x xfreerdp-gui.sh`) and run by command line `./xfreerdp-gui.sh` or double-click on shortcut icon to launch.
 
