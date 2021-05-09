@@ -52,74 +52,94 @@
   wxh1=$(echo $dim | sed -r 's/x.*//')"x"$(($(echo $dim | sed -r 's/.*x//')-20))
   wxh2=$(($(echo $dim | sed -r 's/x.*//')-70))"x"$(($(echo $dim | sed -r 's/.*x//')-70))
 
-  LOGIN=
-  PASSWORD=
-  DOMAIN=
-  SERVER=
-  PORT=
-  RESOLUTION=
-  GEOMETRY=
-  CERTIGNORE=
-  BPP=
-  NAMEDIR=
-  DIR=
-  OPTIONS=
-    varFull=
-  varLog=
+  configfile="$HOME/xfreerdp-gui.conf"
+  LOGIN=Administrator
+  DOMAIN=WORKGROUP 
+  SERVER=somewhere.com
+  PORT=3389
+  RESOLUTION=1920x1060
+  BPP=24
+  SHAREDIRNAME=Shared
+  SHAREDIR=$HOME
+  if [ -f "$configfile" ]; then
+    source $configfile
+    echo -e "Configuration loaded from $configfile"
+  fi 
+
   [ -n "$USER" ] && until xdotool search "xfreerdp-gui" windowactivate key Right Tab 2>/dev/null ; do sleep 0.03; done &
     FORMULARY=$(yad --center --width=380 \
-          --window-icon="gtk-execute" --image="debian-logo" --item-separator=","                                              \
-          --title "xfreerdp-gui"                                                                                              \
+          --window-icon="gtk-execute" --image="freerdp-logo.png" --item-separator=","                                           \
+          --title "xfreeRDP-GUI"                                                                                              \
           --form                                                                                                              \
-          --field="Server" $SERVER "somewhere.com"                                                               \
-          --field="Port"  $PORT "3389"                                                                                        \
-          --field="Domain" $DOMAIN ""                                                                                         \
-          --field="Username" $LOGIN "Administrator"                                                                            \
-          --field="Password ":H $PASSWORD "password"                                                                                  \
-          --field="Resolution":CBE $RESOLUTION "$wxh1,$wxh2,640x480,720x480,800x600,1024x768,1280x1024,1600x1200,1920x1080,"  \
-          --field="BPP":CBE $BPP "24,16,32,"                                                                                  \
-          --field="Name of Shared Directory" $NAMEDIR "Shared"                                                                \
-          --field="Shared Directory" $DIR $HOME/Downloads                                                                     \
-          --field="Other Options" $OPTIONS ""                                                                                 \
-          --field="Full Screen":CHK $varFull                                                                                  \
-          --field="Show Log":CHK $varLog                                                                                      \
+          --field="Server":CE ^$SERVER                                                                                        \
+          --field="Port":CE  ^$PORT                                                                                           \
+          --field="Domain":CE ^$DOMAIN                                                                                        \
+          --field="Username":CE ^$LOGIN                                                                                       \
+          --field="Password ":H $PASSWORD ""                                                                                  \
+          --field="Resolution":CBE "^$RESOLUTION,$wxh1,$wxh2,640x480,720x480,800x600,1024x768,1280x1024,1600x1200,1920x1080," \
+          --field="BPP":CBE "^$BPP,32,24,16,"                                                                                 \
+          --field="Name of Shared Directory":CE ^$SHAREDIRNAME                                                                \
+          --field="Shared Directory":DIR $SHAREDIR                                                                            \
+          --field="Other Options":CE ^$OPTIONS                                                                                \
+          --field="Log":CBE "^OFF,FATAL,ERROR,WARN,INFO,DEBUG,TRACE"                                                          \
+          --field="Full Screen":CHK $FULLSCREEN                                                                               \
+          --field="Save config":CHK                                                                                           \
           --button="Cancel":1 --button="Connect":0)
     [ $? != 0 ] && exit
-    SERVER=$(echo $FORMULARY     | awk -F '|' '{ print $1 }')
-    PORT=$(echo $FORMULARY       | awk -F '|' '{ print $2 }')
-    DOMAIN=$(echo $FORMULARY     | awk -F '|' '{ print $3 }')
-    LOGIN=$(echo $FORMULARY      | awk -F '|' '{ print $4 }')
-    PASSWORD=$(echo $FORMULARY   | awk -F '|' '{ print $5 }')
-    RESOLUTION=$(echo $FORMULARY | awk -F '|' '{ print $6 }')
-    BPP=$(echo $FORMULARY        | awk -F '|' '{ print $7 }')
-    NAMEDIR=$(echo $FORMULARY    | awk -F '|' '{ print $8 }')
-    DIR=$(echo $FORMULARY        | awk -F '|' '{ print $9 }')
-    OPTIONS=$(echo $FORMULARY    | awk -F '|' '{ print $10 }')
-    varFull=$(echo $FORMULARY    | awk -F '|' '{ print $11 }')
-    if [ "$varFull" = "TRUE" ]; then
-          GEOMETRY="/f"
+    SERVER=$(echo $FORMULARY        | awk -F '|' '{ print $1 }')
+    PORT=$(echo $FORMULARY          | awk -F '|' '{ print $2 }')
+    DOMAIN=$(echo $FORMULARY        | awk -F '|' '{ print $3 }')
+    LOGIN=$(echo $FORMULARY         | awk -F '|' '{ print $4 }')
+    PASSWORD=$(echo $FORMULARY      | awk -F '|' '{ print $5 }')
+    RESOLUTION=$(echo $FORMULARY    | awk -F '|' '{ print $6 }')
+    BPP=$(echo $FORMULARY           | awk -F '|' '{ print $7 }')
+    SHAREDIRNAME=$(echo $FORMULARY  | awk -F '|' '{ print $8 }')
+    SHAREDIR=$(echo $FORMULARY      | awk -F '|' '{ print $9 }')
+    OPTIONS=$(echo $FORMULARY       | awk -F '|' '{ print $10 }')
+    LOG=$(echo $FORMULARY           | awk -F '|' '{ print $11 }')
+    FULLSCREEN=$(echo $FORMULARY    | awk -F '|' '{ print $12 }')
+    varSave=$(echo $FORMULARY       | awk -F '|' '{ print $13 }')
+    if [ "$FULLSCREEN" = "TRUE" ]; then
+          fullscreenparam="/f"
     else
-          GEOMETRY=""
+          fullscreenparam=""
     fi
-    varLog=$(echo $FORMULARY | awk -F '|' '{ print $12 }')
+    if [ "$varSave" = "TRUE" ]; then
+        echo -e "# xFreeRDP-GUI Config File"    > $configfile
+        echo -e "# `date` "                     >> $configfile
+        echo -e ""                              >> $configfile
+        echo -e "LOGIN=$LOGIN"                  >> $configfile
+        echo -e "DOMAIN=$DOMAIN"                >> $configfile
+        echo -e "SERVER=$SERVER"                >> $configfile
+        echo -e "PORT=$PORT"                    >> $configfile
+        echo -e "RESOLUTION=$RESOLUTION"        >> $configfile
+        echo -e "BPP=$BPP"                      >> $configfile
+        echo -e "SHAREDIRNAME=$SHAREDIRNAME"    >> $configfile
+        echo -e "SHAREDIR=$SHAREDIR"            >> $configfile
+        echo -e "OPTIONS=$OPTIONS"              >> $configfile
+        echo -e "FULLSCREEN=$FULLSCREEN"        >> $configfile
+        echo -e "Configuration saved to $configfile"
+    fi
 
-    xfreerdp                            \
-                      /v:"$SERVER":$PORT        \
-                      /cert-tofu /cert-ignore   \
-                      /t:"$SERVER"              \
-                      /u:"$LOGIN"               \
-                      /p:"$PASSWORD"            \
-                      /d:"$DOMAIN"              \
-                      /sound                    \
-                      /bpp:$BPP                 \
-                      /sec-tls $GEOMETRY        \
-                      /size:$RESOLUTION         \
-                      /decorations /window-drag \
-                      /drive:$NAMEDIR,$DIR      \
-                      /compression /drive:$DIR  \
-                      $OPTIONS                  \
-                      +compression +clipboard   \
-                      -menu-anims +fonts 2>&1 &
+    xfreerdp \
+     /v:"$SERVER":$PORT        \
+     /cert-tofu /cert-ignore   \
+     /t:"$SERVER"              \
+     /u:"$LOGIN"               \
+     /p:"$PASSWORD"            \
+     /d:"$DOMAIN"              \
+     /sound                    \
+     /bpp:$BPP                 \
+     /sec-tls $fullscreenparam \
+     /size:$RESOLUTION         \
+     /decorations /window-drag \
+     /drive:$SHAREDIRNAME,$SHAREDIR \
+     /compression-level:2      \
+     $OPTIONS                  \
+     +clipboard                \
+     -menu-anims               \
+     /log-level:"$LOG"         \
+     2>&1
 
 
   #####################################################################################
