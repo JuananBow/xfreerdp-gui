@@ -68,7 +68,7 @@
 
   [ -n "$USER" ] && until xdotool search "xfreerdp-gui" windowactivate key Right Tab 2>/dev/null ; do sleep 0.03; done &
     FORMULARY=$(yad --center --width=380 \
-          --window-icon="gtk-execute" --image="freerdp-logo.png" --item-separator=","                                           \
+          --window-icon="gtk-execute" --image="$(dirname "$0")/freerdp-logo.png" --item-separator=","                         \
           --title "xfreeRDP-GUI"                                                                                              \
           --form                                                                                                              \
           --field="Server":CE ^$SERVER                                                                                        \
